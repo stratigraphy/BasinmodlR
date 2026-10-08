@@ -1,25 +1,31 @@
 Package: BasinmodlR
 Type: Package
-Title: One-Dimensional Burial and Thermal History Modelling of Sedimentary Basins
+Title: One-Dimensional Burial and Thermal History Modelling of Sedimentary
+        Basins
 Version: 0.1.0
-Authors@R: person(given = "Michiel",
-                  family = "Arts",
-                  role = c("aut", "cre"),
-                  email = "michiel.arts@stratigraphy.eu")
-Description: A model framework of the burial, compaction and temperature history
-    of a sedimentary column through geological time. A basin is described by one
-    row per stratigraphic unit and one row per erosion event; deposition phases,
-    hiatuses, layer stacks, maximum-burial windows and grain (solid) thicknesses
-    are all derived from that description. Compaction follows an exponential
-    porosity-depth law and is treated as irreversible, so uplifted layers keep the
-    porosity acquired at their deepest burial. Temperatures follow the
-    steady-state conductive geotherm for a layered column with radiogenic heat
-    production. Utilities are provided to draw a composite burial, temperature 
-	and event chart figures.
-License: GPL-3
-Encoding: UTF-8
+Authors@R: person(given = "Michiel", family = "Arts", role = c("aut", "cre"), email = "michiel.arts@stratigraphy.eu", comment = c(ORCID = "0000-0003-3181-4608"))
+Maintainer: Michiel Arts <michiel.arts@stratigraphy.eu>
 Depends: R (>= 3.5.0)
 Imports: graphics, grDevices, stats, utils
+Suggests: testthat (>= 3.0.0)
+Description: Tools for one-dimensional burial, compaction and thermal history
+    modelling of sedimentary basins, aimed at geologists and stratigraphers.
+    A basin is described by one row per stratigraphic unit and one row per
+    erosion event, from which deposition phases, hiatuses, layer stacks,
+    maximum-burial windows and grain (solid) thicknesses are derived.
+    Compaction follows an exponential porosity-depth law and is irreversible,
+    so uplifted layers keep the porosity acquired at their deepest burial.
+    Temperatures follow the steady-state conductive geotherm of a layered
+    column with radiogenic heat production. The methods follow the textbook
+    treatment of Allen and Allen (2013). Functions are included to draw a
+    composite figure of burial, temperature and hydrocarbon generation windows
+    and a petroleum system event chart.
+License: GPL-3
+URL: https://github.com/stratigraphy/basinmodlR
+BugReports: https://github.com/stratigraphy/basinmodlR/issues
+Encoding: UTF-8
+Language: en-GB
 LazyData: true
-NeedsCompilation: no
 RoxygenNote: 7.3.3
+NeedsCompilation: no
+Config/testthat/edition: 3

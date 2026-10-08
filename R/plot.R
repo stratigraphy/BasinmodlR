@@ -1,113 +1,104 @@
 #' @title Composite burial and temperature figure
 #'
-#' @description
-#' Draws the standard figure of a model run: a geological period bar, an event
-#' bar, the temperature raster with the water column, the horizon lines and
-#' labelled isotherms, a colour key, and one generation-window panel per
-#' selected unit. The function also calculates and prints phase boundary
-#' diagnostics internally, comparing the change in layer depth and temperature
-#' over the single million years that straddles every phase boundary with the
-#' background rate on either side of it.
+#' @description Draws the standard figure of a basin model run: a geological
+#' period bar, an event bar (deposition, erosion and hiatus phases), a
+#' temperature raster with the water column, the burial path of every
+#' stratigraphic unit (horizon lines) and labelled isotherms, a colour key, and
+#' one generation-window panel for every selected unit.
 #'
-#' @param res an object of class \code{"basin_model"}, from
-#'   \code{\link{run_basin_model}}.
-#' @param window numeric of length two, the temperature window in degrees
-#'   Celsius used for the generation panels.
-#' @param window_units which units get a generation panel, given as row numbers
-#'   of \code{res$units} or as unit names. \code{NULL} uses
-#'   \code{res$source_units} when the basin description provides it, and draws
-#'   no panel otherwise.
-#' @param n_levels number of colour levels in the raster.
-#' @param scale how the colours are spread over the temperature range, either
-#'   \code{"quantile"} (equalised, the default) or \code{"linear"}.
-#' @param contour_n approximate number of isotherms.
-#' @param xmax oldest age shown (Ma). \code{NULL} uses the start of the model.
-#' @param tick spacing of the age axis labels (Myr).
-#' @param new_device open a new graphics window before plotting. Leave this
-#'   \code{FALSE} when writing to a file device.
-#' @param use the temperature used for the generation window test, one of
-#'   \code{"T_mid"} (the middle of the layer, the default), \code{"T_top"} or
-#'   \code{"T_base"}.
-#' @param span half width, in Myr, of the interval on either side of a boundary
-#'   used to measure the background rate for continuity checks.
+#' @details
+#' \strong{Burial and temperature panel.} The horizontal axis is the age (Ma)
+#' running from the oldest age on the left to the present on the right. The
+#' vertical axis is the depth below sea level (m). The coloured raster is the
+#' temperature of the column, the light blue area at the top is the water
+#' column, and every black line is the base of one stratigraphic unit. Where a
+#' line moves up the unit has been uplifted and eroded, and where it moves down
+#' it has been buried deeper. The thin lines are isotherms.
 #'
-#' @return \code{res}, invisibly. Called for its side effect, the figure and diagnostic print.
+#' \strong{Generation windows.} The lower panels show for a selected unit when
+#' it is inside a temperature window (for example the oil window) \emph{for
+#' the first time}. Because organic matter that has been heated cannot go back
+#' to an immature state, generation can only continue when the unit reaches a
+#' temperature that is higher than any temperature it has had before. A unit is
+#' therefore drawn as "gen" (generating) at an age when its temperature lies
+#' inside \code{window} and is equal to the highest temperature that the unit has
+#' reached up to that age (Tissot and Welte, 1984; Allen and Allen, 2013). The
+#' default window of 95 to 135 degrees Celsius is a nominal choice and should be
+#' adjusted to the kerogen type and the maturity model of the study at hand.
+#'
+#' \strong{Continuity check.} With \code{verbose = TRUE} the function prints
+#' a table that compares the change in layer depth and temperature over the one
+#' million year step that straddles every phase boundary with the background
+#' rate of change on either side of it. Ratios close to 1 show that no artificial
+#' step is introduced at the boundary between two phases.
+#'
+#' The geological periods and their colours follow the International Chronostratigraphic
+#' Chart (Gradstein et al., 2020). The colour scale of the temperature raster
+#' is a rainbow-like palette (the 'turbo' colour scheme).
+#'
+#' @param res An object of class \code{"basin_model"}, the result of
+#' \code{\link{run_basin_model}}.
+#' @param window Numeric vector of length two, the temperature window in degrees
+#' Celsius that is used for the generation panels. Default is \code{c(95, 135)}.
+#' @param window_units Which units get a generation panel, given as row numbers
+#' of \code{res$units} or as unit names. \code{NULL} uses
+#' \code{res$source_units} when the basin description provides it and draws no
+#' panel otherwise.
+#' @param n_levels Number of colour levels in the temperature raster. Default is
+#' 250.
+#' @param scale How the colours are spread over the temperature range, either
+#' \code{"quantile"} (equal areas get equal numbers of colours, the default) or
+#' \code{"linear"} (equal temperature steps get equal colours).
+#' @param contour_n Approximate number of isotherms. Default is 20.
+#' @param xmax Oldest age shown in Ma. \code{NULL} (default) uses the start of the
+#' model.
+#' @param tick Spacing of the age axis labels in Myr. Default is 25.
+#' @param new_device Open a new graphics window before plotting. Leave this
+#' \code{FALSE} (default) when writing to a file device or to the plot pane.
+#' @param use The temperature that is used for the generation window test, one of
+#' \code{"T_mid"} (the middle of the layer, the default), \code{"T_top"} or
+#' \code{"T_base"}.
+#' @param span Half width, in Myr, of the interval on either side of a phase
+#' boundary that is used to measure the background rate for the continuity
+#' check. Default is 5.
+#' @param verbose Print the continuity check table. Default is \code{FALSE}.
+#'
+#' @return \code{res}, invisibly. The function is called for its side effect, the
+#' figure.
+#'
+#' @author
+#' Michiel Arts
+#'
+#' @references
+#' Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
+#' Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+#'
+#' Gradstein, F.M., Ogg, J.G., Schmitz, M.D., and Ogg, G.M. (eds) (2020). Geologic
+#' Time Scale 2020. Elsevier, Amsterdam, 1357 p.
+#' \doi{10.1016/C2020-1-02369-3} \cr
+#'
+#' Tissot, B.P., and Welte, D.H. (1984). Petroleum Formation and Occurrence,
+#' 2nd ed. Springer, Berlin, 699 p. \doi{10.1007/978-3-642-87813-8}
+#'
+#' @seealso \code{\link{run_basin_model}}, \code{\link{plot_event_chart}}
 #'
 #' @examples
-#' condroz_example <- list(
-#'   name = "Huy (Condroz inlier)",
-#'   units = data.frame(
-#'     name = c(
-#'       "layer 1", "Mousty eq. (unit 2)", "layer 3",
-#'       "Huy-Vitrival-Bruyere Fms. (unit 5)", "layer 5", "layer 6",
-#'       "layer 7", "layer 8"
-#'     ),
-#'     start = c(520, 497, 485, 467, 450, 440, 433, 400),
-#'     end = c(497, 485, 480, 450, 440, 433, 425, 300),
-#'     thickness = c(1.50, 1.00, 0.05, 0.50, 0.05, 0.50, 0.50, 3.50),
-#'     phi0 = c(0.490, 0.602, 0.595, 0.595, 0.602, 0.602, 0.602, 0.419),
-#'     ck = c(0.270, 0.462, 0.450, 0.450, 0.462, 0.462, 0.462, 0.399),
-#'     K = c(5.500, 2.700, 2.875, 2.875, 2.700, 2.700, 2.700, 3.720),
-#'     A = c(1.200, 1.600, 1.575, 1.575, 1.600, 1.600, 1.600, 0.850),
-#'     rho = c(2650, 2720, 2702.5, 2702.5, 2720, 2720, 2720, 2680),
-#'     stringsAsFactors = FALSE
-#'   ),
-#'   erosions = data.frame(
-#'     start = c(425, 300, 230, 45),
-#'     end = c(400, 230, 45, 0),
-#'     amount = c(0.5, 3.0, 0.5, 0.5)
-#'   ),
-#'   water_depth = cbind(
-#'     age = c(
-#'       520, 497, 485, 480, 467, 450, 440, 425,
-#'       400, 325, 310, 300, 275, 230, 0
-#'     ),
-#'     m = c(
-#'       0, 50, 250, 0, 0, 200, 100, 0,
-#'       0, 250, 0, 0, 0, 0, 0
-#'     )
-#'   ),
-#'   heat_flow = cbind(
-#'     age = c(
-#'       520, 497, 485, 480, 467, 450, 440, 425,
-#'       400, 325, 300, 275, 230, 0
-#'     ),
-#'     mWm2 = c(
-#'       80, 70, 60, 50, 50, 60, 60, 70,
-#'       60, 70, 70, 60, 60, 63
-#'     )
-#'   ),
-#'   surface_temp = data.frame(
-#'     age = seq(0, 520, by = 10),
-#'     temp = c(
-#'       11.0411784, 0.1500778, 3.8685811, 6.5473048, 12.1965383,
-#'       17.0861816, 17.1607056, 20.4808655, 21.1662140, 23.6852976,
-#'       25.2335841, 23.0593262, 19.7055817, 22.0795466, 20.6099243,
-#'       20.9470520, 20.6926142, 15.7622960, 16.8022995, 20.8179728,
-#'       23.1166636, 26.5647456, 26.6191177, 38.6240616, 39.1549352,
-#'       39.2777100, 33.0727590, 26.5889257, 27.4612198, 24.3741633,
-#'       27.8295568, 27.3116150, 31.9937617, 33.6753845, 27.6599223,
-#'       25.8550212, 28.2169037, 30.6980921, 33.2465744, 30.7135722,
-#'       28.8724314, 29.5901311, 24.2159042, 28.4941711, 20.8871002,
-#'       16.4026972, 11.2207235, 15.0190506, 13.3535004, 11.9391505,
-#'       6.1531270, 7.4877523, 6.3858999
-#'     )
-#'   ),
-#'   source_units = c(2L, 4L)
-#' )
-#'
-#' res <- run_basin_model(condroz_example)
+#' # Burial and temperature history of the Huy section (Condroz inlier).
+#' # The generation panels are drawn for the units listed in condroz$source_units.
+#' res <- run_basin_model(condroz)
 #' plot_basin_model(res)
 #'
+#' # Show the generation window of the Mousty equivalent only, using a
+#' # narrower window, and print the continuity check.
+#' plot_basin_model(res,
+#'                  window = c(100, 130),
+#'                  window_units = "Mousty eq. (unit 2)",
+#'                  verbose = TRUE)
 #' @export
-#' @importFrom graphics abline
-#' @importFrom graphics arrows
-#' @importFrom graphics axis
-#' @importFrom graphics box
-#' @importFrom graphics lines
-#' @importFrom graphics mtext
-#' @importFrom graphics par
-#' @importFrom graphics rect
+#' @importFrom graphics abline arrows axis box lines mtext par rect
+#' @importFrom graphics text polygon image contour layout
+#' @importFrom grDevices colorRampPalette dev.new
+#' @importFrom stats quantile median
 
 plot_basin_model <- function(res,
                              window = c(95, 135),
@@ -119,17 +110,20 @@ plot_basin_model <- function(res,
                              tick = 25,
                              new_device = FALSE,
                              use = c("T_mid", "T_top", "T_base"),
-                             span = 5) {
+                             span = 5,
+                             verbose = FALSE) {
 
   scale <- match.arg(scale)
   use <- match.arg(use)
 
+  # Colour palette of the temperature raster (the 'turbo' colour scheme).
   turbo_pal <- grDevices::colorRampPalette(c(
     "#30123B", "#4145AB", "#4675ED", "#39A2FC", "#1BCFD4", "#24ECA6", "#61FC6C",
     "#A4FC3B", "#D1E834", "#F3C63A", "#FE9B2D", "#F36315", "#D93806", "#B11901",
     "#7A0403"
   ))
 
+  # Geological periods (ages in Ma) and their colours for the period bar.
   ics_periods <- data.frame(
     name = c("Quaternary", "Neogene", "Paleogene", "Cretaceous", "Jurassic",
              "Triassic", "Permian", "Carboniferous", "Devonian", "Silurian",
@@ -145,6 +139,9 @@ plot_basin_model <- function(res,
     stringsAsFactors = FALSE
   )
 
+  # Continuity check at the phase boundaries
+  # Change in base depth (dz) and base temperature (dT) of every unit from one
+  # age to the next.
   d_cc <- do.call(rbind, lapply(split(res$profile, res$profile$unit), function(x) {
     x <- x[order(-x$age), ]
     if (nrow(x) < 2) return(NULL)
@@ -152,6 +149,7 @@ plot_basin_model <- function(res,
                dz = abs(diff(x$z_base)), dT = abs(diff(x$T_base)))
   }))
 
+  # Ages of the boundaries between two phases.
   bnd <- vapply(res$phases[-length(res$phases)], function(p) p$end, 0)
 
   out_cc <- do.call(rbind, lapply(bnd, function(b) {
@@ -164,13 +162,15 @@ plot_basin_model <- function(res,
                bg_T = if (nrow(nb)) stats::median(nb$dT) else NA_real_)
   }))
 
-  if (!is.null(out_cc) && nrow(out_cc) > 0) {
+  if (verbose && !is.null(out_cc) && nrow(out_cc) > 0) {
     out_cc$ratio_z <- round(out_cc$jump_z / pmax(out_cc$bg_z, 1e-9), 2)
     out_cc$ratio_T <- round(out_cc$jump_T / pmax(out_cc$bg_T, 1e-9), 2)
     cat("depth and temperature step at each phase boundary versus the background rate\n")
     print(out_cc, row.names = FALSE, digits = 3)
   }
 
+  # Prepare the data for plotting
+  # The x axis is flipped so that the oldest age is on the left: x = xmax - age.
   if (is.null(xmax)) xmax <- max(res$ages) + 1
 
   xf <- function(a) xmax - a
@@ -189,6 +189,8 @@ plot_basin_model <- function(res,
   window_units <- window_units[!is.na(window_units)]
   nw <- length(window_units)
 
+  # Colour breaks: equal numbers of grid cells per colour (quantile) or equal
+  # temperature steps per colour (linear).
   if (scale == "quantile") {
     br <- unique(stats::quantile(
       z,
@@ -210,6 +212,9 @@ plot_basin_model <- function(res,
   op <- graphics::par(no.readonly = TRUE)
   on.exit(graphics::par(op), add = TRUE)
 
+  # Page layout
+  # Row 1: period bar, row 2: event bar, row 3: temperature raster and colour
+  # key, followed by one row for every generation panel.
   m <- rbind(c(1, 0), c(2, 0), c(3, 4))
   if (nw > 0) {
     for (i in seq_len(nw)) {
@@ -223,6 +228,7 @@ plot_basin_model <- function(res,
     widths = c(5, 1)
   )
 
+  # Panel 1: geological periods
   graphics::par(mar = c(0.5, 4, 0.5, 0.5))
   plot(
     NA,
@@ -276,6 +282,7 @@ plot_basin_model <- function(res,
 
   graphics::mtext("Event", side = 2, line = 1, las = 2, cex = 0.75)
 
+  # Panel 2: deposition, erosion and hiatus phases (numbered)
   ecol <- c(
     deposition = "gold",
     erosion = "grey80",
@@ -301,6 +308,7 @@ plot_basin_model <- function(res,
 
   graphics::box()
 
+  # Panel 3: temperature raster, water column, horizons and isotherms
   graphics::par(mar = c(4, 4, 1, 0.5))
 
   max_plot_depth <- max(c(dg, res$profile$z_base + res$profile$water_depth), na.rm = TRUE)
@@ -326,6 +334,7 @@ plot_basin_model <- function(res,
     las = 2
   )
 
+  # Water column.
   graphics::polygon(
     c(xx, rev(xx)),
     c(rep(0, length(xx)), rev(wd)),
@@ -335,6 +344,7 @@ plot_basin_model <- function(res,
 
   graphics::lines(xx, wd, lwd = 2)
 
+  # Base of every unit (burial path), plotted below sea level.
   for (u in sort(unique(res$profile$unit))) {
     d <- res$profile[res$profile$unit == u, ]
     d <- d[order(-d$age), ]
@@ -346,6 +356,7 @@ plot_basin_model <- function(res,
     )
   }
 
+  # Isotherms.
   graphics::contour(
     x = xx,
     y = dg,
@@ -360,6 +371,7 @@ plot_basin_model <- function(res,
 
   graphics::box()
 
+  # Colour key
   graphics::par(mar = c(4, 1, 1, 4))
 
   nb <- length(br) - 1
@@ -386,7 +398,7 @@ plot_basin_model <- function(res,
   )
 
   graphics::mtext(
-    "Temperature (C)",
+    "Temperature (\u00B0C)",
     side = 4,
     line = 2.5,
     cex = 0.75
@@ -394,6 +406,9 @@ plot_basin_model <- function(res,
 
   graphics::box()
 
+  # Generation panels
+  # A unit generates when its temperature is inside the window and is the
+  # highest temperature it has experienced so far (cummax).
   if (nw > 0) {
     mw_ages <- res$ages
     present <- sort(unique(res$profile$unit))

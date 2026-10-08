@@ -2,16 +2,16 @@
 % Please edit documentation in R/plot_event_chart.R
 \name{plot_event_chart}
 \alias{plot_event_chart}
-\title{Plot a petroleum-system event chart from a basin-model result}
+\title{Plot a petroleum system event chart from a basin model result}
 \usage{
 plot_event_chart(
   res,
-  source_units,
-  reservoir_units,
-  seal_units,
+  source_units = NULL,
+  reservoir_units = NULL,
+  seal_units = NULL,
   trap_formation = NULL,
   generation_window = c(95, 135),
-  critical_moment,
+  critical_moment = NULL,
   temperature_column = "T_mid",
   xmax = NULL,
   tick = 25,
@@ -22,164 +22,120 @@ plot_event_chart(
 )
 }
 \arguments{
-\item{res}{An object returned by [run_basin_model()], containing the model
-units, geological phases, ages, and temperature profiles.}
+\item{res}{An object returned by \code{\link{run_basin_model}}. It supplies
+the model units, the deposition, erosion and hiatus phases, the ages and the
+temperature of every layer.}
 
-\item{source_units}{Source-rock units. May be supplied as unit indices or
-as unit names corresponding to \code{res$units$name}.}
+\item{source_units}{Source-rock units, given as row numbers of
+\code{res$units} or as unit names. Default is \code{NULL} (no source rock).}
 
-\item{reservoir_units}{Reservoir-rock units. May be supplied as unit
-indices or as unit names corresponding to \code{res$units$name}.}
+\item{reservoir_units}{Reservoir-rock units, given as row numbers or unit
+names. Default is \code{NULL}.}
 
-\item{seal_units}{Seal-rock units. May be supplied as unit indices or as
-unit names corresponding to \code{res$units$name}.}
+\item{seal_units}{Seal-rock units, given as row numbers or unit names.
+Default is \code{NULL}.}
 
-\item{trap_formation}{Optional data frame defining trap-formation
-intervals. The data frame must contain columns named \code{start} and
-\code{end}. Defaults to \code{NULL}.}
+\item{trap_formation}{Optional data frame with the columns \code{start} and
+\code{end} (Ma, \code{start} being the older age) that gives the interval(s)
+of trap formation. Default is \code{NULL}.}
 
-\item{generation_window}{Numeric vector of length two defining the
-temperature window used to identify generation/migration/accumulation,
-in degrees C. Defaults to \code{c(95, 135)}.}
+\item{generation_window}{Numeric vector of length two with the temperature
+window (degrees Celsius) that is used to identify generation, migration and
+accumulation. Default is \code{c(95, 135)}.}
 
-\item{critical_moment}{Numeric value giving the age of the petroleum-system
-critical moment in Ma.}
+\item{critical_moment}{Age (Ma) of the critical moment of the petroleum system,
+the time that best represents the generation, migration and accumulation of
+most of the hydrocarbons (Magoon and Dow, 1994). Default is \code{NULL}, in
+which case neither the critical moment nor the preservation time is drawn.}
 
-\item{temperature_column}{Character string giving the name of the
-temperature column in \code{res$profile}. Defaults to \code{"T_mid"}.}
+\item{temperature_column}{Name of the temperature column of
+\code{res$profile} that is used, one of \code{"T_mid"} (default),
+\code{"T_top"} or \code{"T_base"}.}
 
-\item{xmax}{Optional maximum age shown on the x-axis. If \code{NULL}, the
-maximum model age in \code{res$ages} is used.}
+\item{xmax}{Oldest age shown on the x-axis in Ma. \code{NULL} (default) uses
+the oldest model age.}
 
-\item{tick}{Spacing between x-axis age ticks in Ma. Defaults to 25.}
+\item{tick}{Spacing between the age labels of the x-axis in Myr. Default is
+25.}
 
-\item{col}{Default colour used for event bars. Defaults to
-\code{"darkred"}.}
+\item{col}{Default colour of the event bars. Default is \code{"darkred"}.}
 
-\item{critical_col}{Colour used for the critical-moment marker.
-Defaults to \code{"black"}.}
+\item{critical_col}{Colour of the critical moment marker. Default is
+\code{"black"}.}
 
-\item{main}{Plot title. Defaults to an empty string.}
+\item{main}{Plot title. Default is an empty string.}
 
-\item{xlab}{Label for the x-axis. Defaults to \code{"Age (Ma)"}.}
+\item{xlab}{Label of the x-axis. Default is \code{"Age (Ma)"}.}
 }
 \value{
-Invisibly returns a named list containing the event intervals used to
-construct the chart.
+Invisibly returns a named list that contains, for every row of the chart, the
+list of data frames with the event intervals (\code{start} and \code{end} in
+Ma) that were used to draw the chart.
 }
 \description{
-Draws a petroleum-system event chart from the output of
-[run_basin_model()]. The chart shows the timing of source-rock
-deposition, reservoir and seal deposition, overburden development,
-uplift/erosion, optional trap formation, generation/migration/accumulation,
-preservation, and the critical moment.
-
-Source rocks are displayed as separate bars and may be assigned
-different shades of red. Generation/migration/accumulation is displayed
-as one sub-row per source rock, allowing a single source rock to have
-multiple separate generation events without creating additional rows.
-
-Overburden begins after the first specified source rock has finished being
-deposited. From that point onward, every subsequent deposition phase is
-represented as overburden, regardless of whether the deposited material is
-source rock, reservoir rock, seal rock, or another unit. Hiatuses, uplift,
-and erosion interrupt the overburden record and therefore appear as gaps.
-
-The generation/migration/accumulation interval is calculated from the
-modelled temperature history of each specified source rock. Only periods
-within \code{generation_window} during which temperature reaches or exceeds
-all previous temperatures in the source-rock history are plotted.
-
-Preservation is plotted from the supplied critical moment to the present
-only when source rock, reservoir rock, seal rock, and trap formation have
-all been specified.
+Draws a petroleum system event chart (Magoon and Dow, 1994)
+from the output of \code{\link{run_basin_model}}. The chart shows, against
+geological time, when the source rocks, reservoir rocks and seal rocks were
+deposited, when the overburden was deposited, when the section was uplifted
+and eroded, when traps formed, when hydrocarbons were generated, migrated and
+accumulated, how long the accumulation has been preserved, and the critical
+moment of the system.
 }
 \details{
-Ages are plotted from old to young, with the present at the right-hand
-side of the chart. Internally, the x-axis is transformed so that increasing
-plotted x-position corresponds to decreasing geological age.
+\strong{Source rocks.} Source rocks are displayed as separate bars and may
+be assigned different shades of red. Source-rock bars are kept separate even
+when their depositional intervals overlap; overlapping bars are stacked
+within the Source Rock row.
 
-Source-rock bars are kept separate even when their depositional intervals
-overlap. If multiple source rocks overlap, they are stacked within the
-Source Rock row.
+\strong{Overburden.} Overburden begins after the first specified source rock
+has finished being deposited. From that point onward, every deposition phase
+is represented as overburden, regardless of whether the deposited material is
+source rock, reservoir rock, seal rock or another unit. Hiatuses, uplift and
+erosion interrupt the overburden record and therefore appear as gaps.
 
-Generation events are handled differently: all events belonging to the
-same source rock are drawn in the same generation sub-row. Consequently,
-repeated generation or expulsion events from one source rock do not create
-additional source-rock rows.
+\strong{Generation, migration and accumulation.} The interval is calculated
+from the modelled temperature history of each specified source rock. Only
+periods within \code{generation_window} during which the temperature reaches
+or exceeds all previous temperatures in the history of the source rock are
+plotted (organic matter that has been heated does not generate again until it
+gets hotter than before, see \code{\link{plot_basin_model}}). Generation
+events are handled per source rock: all events that belong to the same source
+rock are drawn in the same sub-row, so a source rock with several separate
+generation events does not create additional rows.
+
+\strong{Preservation.} Preservation is plotted from the critical moment to
+the present only when source rock, reservoir rock, seal rock and trap
+formation have all been specified.
+
+\strong{Time axis.} Ages are plotted from old to young, with the present at
+the right-hand side of the chart. Internally the x-axis is transformed so that
+an increasing plotted position corresponds to a decreasing geological age.
 }
 \examples{
-condroz_example <- list(
-  name = "Huy (Condroz inlier)",
-  units = data.frame(
-    name = c(
-      "layer 1", "Mousty eq. (unit 2)", "layer 3",
-      "Huy-Vitrival-Bruyere Fms. (unit 5)", "layer 5", "layer 6",
-      "layer 7", "layer 8"
-    ),
-    start = c(520, 497, 485, 467, 450, 440, 433, 400),
-    end = c(497, 485, 480, 450, 440, 433, 425, 300),
-    thickness = c(1.50, 1.00, 0.05, 0.50, 0.05, 0.50, 0.50, 3.50),
-    phi0 = c(0.490, 0.602, 0.595, 0.595, 0.602, 0.602, 0.602, 0.419),
-    ck = c(0.270, 0.462, 0.450, 0.450, 0.462, 0.462, 0.462, 0.399),
-    K = c(5.500, 2.700, 2.875, 2.875, 2.700, 2.700, 2.700, 3.720),
-    A = c(1.200, 1.600, 1.575, 1.575, 1.600, 1.600, 1.600, 0.850),
-    rho = c(2650, 2720, 2702.5, 2702.5, 2720, 2720, 2720, 2680),
-    stringsAsFactors = FALSE
-  ),
-  erosions = data.frame(
-    start = c(425, 300, 230, 45),
-    end = c(400, 230, 45, 0),
-    amount = c(0.5, 3.0, 0.5, 0.5)
-  ),
-  water_depth = cbind(
-    age = c(
-      520, 497, 485, 480, 467, 450, 440, 425,
-      400, 325, 310, 300, 275, 230, 0
-    ),
-    m = c(
-      0, 50, 250, 0, 0, 200, 100, 0,
-      0, 250, 0, 0, 0, 0, 0
-    )
-  ),
-  heat_flow = cbind(
-    age = c(
-      520, 497, 485, 480, 467, 450, 440, 425,
-      400, 325, 300, 275, 230, 0
-    ),
-    mWm2 = c(
-      80, 70, 60, 50, 50, 60, 60, 70,
-      60, 70, 70, 60, 60, 63
-    )
-  ),
-  surface_temp = data.frame(
-    age = seq(0, 520, by = 10),
-    temp = c(
-      11.0411784, 0.1500778, 3.8685811, 6.5473048, 12.1965383,
-      17.0861816, 17.1607056, 20.4808655, 21.1662140, 23.6852976,
-      25.2335841, 23.0593262, 19.7055817, 22.0795466, 20.6099243,
-      20.9470520, 20.6926142, 15.7622960, 16.8022995, 20.8179728,
-      23.1166636, 26.5647456, 26.6191177, 38.6240616, 39.1549352,
-      39.2777100, 33.0727590, 26.5889257, 27.4612198, 24.3741633,
-      27.8295568, 27.3116150, 31.9937617, 33.6753845, 27.6599223,
-      25.8550212, 28.2169037, 30.6980921, 33.2465744, 30.7135722,
-      28.8724314, 29.5901311, 24.2159042, 28.4941711, 20.8871002,
-      16.4026972, 11.2207235, 15.0190506, 13.3535004, 11.9391505,
-      6.1531270, 7.4877523, 6.3858999
-    )
-  ),
-  source_units = c(2L, 4L)
-)
+# Event chart of the Huy section (Condroz inlier). The Mousty equivalent
+# (unit 2) and the Huy-Vitrival-Bruyere Fms. (unit 4) are the candidate
+# source rocks.
+res <- run_basin_model(condroz)
+plot_event_chart(res,
+                 source_units = c(2, 4),
+                 reservoir_units = 5,
+                 seal_units = 5,
+                 trap_formation = data.frame(start = 320, end = 295),
+                 critical_moment = 310,
+                 main = "Condroz Inlier (Huy)")
+}
+\references{
+Magoon, L.B., and Dow, W.G. (1994). The petroleum system. In: Magoon, L.B.
+and Dow, W.G. (eds), The Petroleum System - From Source to Trap. American
+Association of Petroleum Geologists Memoir 60, 3--24.
+\doi{10.1306/M60585C1} \cr
 
-res <- run_basin_model(condroz_example)
-plot_event_chart(
-  res,
-  source_units = c(2, 4),
-  reservoir_units = c(5),
-  seal_units = c(5),
-  trap_formation = data.frame(start = 320, end = 295),
-  critical_moment = 310
-)
-
-
+Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
+Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p.
+}
+\seealso{
+\code{\link{run_basin_model}}, \code{\link{plot_basin_model}}
+}
+\author{
+Michiel Arts
 }
