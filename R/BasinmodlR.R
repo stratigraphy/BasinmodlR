@@ -1,7 +1,6 @@
 #' @name BasinmodlR
 #' @aliases BasinmodlR-package
-#' @title One-Dimensional Burial and Thermal History Modelling of Sedimentary
-#' Basins
+#' @title Burial and Thermal History Modelling of Sedimentary Basins
 #' @description BasinmodlR is an R package for one-dimensional (1D) burial,
 #' compaction and thermal history modelling of sedimentary basins. It is aimed
 #' at geologists and stratigraphers who want to reconstruct how deep a
@@ -100,7 +99,8 @@
 #' #1. Basin analysis, compaction and backstripping \cr
 #'
 #' Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-#' Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+#' Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+#' Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 #'
 #' Sclater, J.G., and Christie, P.A.F. (1980). Continental stretching: an
 #' explanation of the post-mid-Cretaceous subsidence of the central North Sea
@@ -159,8 +159,7 @@
 #' purposes, please cite:
 #'
 #' Arts, M.C.M. (2026).
-#' BasinmodlR: One-Dimensional Burial and Thermal History Modelling of
-#' Sedimentary Basins.
+#' BasinmodlR: Burial and Thermal History Modelling of Sedimentary Basins.
 #' https://CRAN.R-project.org/package=BasinmodlR
 #'
 #' @examples

@@ -1,7 +1,7 @@
 test_that("example basins run and have the expected structure", {
   res <- run_basin_model(brabant)
   expect_s3_class(res, "basin_model")
-  expect_true(all(c("profile", "temp_grid", "ages", "phases") %in% names(res)))
+  expect_contains(names(res), c("profile", "temp_grid", "ages", "phases"))
   expect_equal(nrow(res$temp_grid), length(res$ages))
   expect_equal(ncol(res$temp_grid), length(res$depth_grid))
 })
@@ -15,24 +15,28 @@ test_that("Brabant burial reproduces the published thicknesses", {
 
 test_that("hiatuses are derived automatically", {
   res <- run_basin_model(condroz)
-  types <- vapply(res$phases, function(p) p$type, "")
-  expect_true("hiatus" %in% types)
+  types <- character(length(res$phases))
+  for (k in seq_along(res$phases)) {
+    types[k] <- res$phases[[k]]$type
+  }
+  expect_contains(types, "hiatus")
 })
 
 test_that("temperature increases with depth in every time step", {
   res <- run_basin_model(condroz)
   prof <- res$profile
-  expect_true(all(prof$T_base >= prof$T_top))
+  expect_gte(min(prof$T_base - prof$T_top), 0)
 })
 
 test_that("compaction is irreversible", {
   res <- run_basin_model(condroz)
   prof <- res$profile
-  # once a unit is fully deposited its thickness never increases again
   for (u in unique(prof$unit)) {
     d <- prof[prof$unit == u & prof$age <= res$units$end[u], ]
     d <- d[order(-d$age), ]
-    expect_true(all(diff(d$h) <= 1e-6))
+    if (nrow(d) > 1) {
+      expect_lte(max(diff(d$h)), 1e-6)
+    }
   }
 })
 
@@ -50,12 +54,12 @@ test_that("constant boundary conditions are accepted", {
 test_that("invalid input gives an error", {
   bad <- brabant
   bad$units$phi0[1] <- 1.2
-  expect_error(run_basin_model(bad), "phi0")
-  expect_error(run_basin_model(), "units")
+  expect_snapshot(run_basin_model(bad), error = TRUE)
+  expect_snapshot(run_basin_model(), error = TRUE)
 })
 
 test_that("legacy and cumulative radiogenic schemes differ", {
   a <- run_basin_model(brabant)
   b <- run_basin_model(brabant, radiogenic = "legacy")
-  expect_false(isTRUE(all.equal(a$profile$T_base, b$profile$T_base)))
+  expect_gt(max(abs(a$profile$T_base - b$profile$T_base)), 0)
 })

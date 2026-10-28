@@ -85,7 +85,8 @@
 #' \doi{10.1306/M60585C1} \cr
 #'
 #' Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-#' Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p.
+#' Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+#' Chichester, 632 p. ISBN 978-0-470-67377-5.
 #'
 #' @seealso \code{\link{run_basin_model}}, \code{\link{plot_basin_model}}
 #'
@@ -171,13 +172,16 @@ plot_event_chart <- function(
   # Source Rock
 
   if (length(src_idx) > 0) {
-    event_data[["Source Rock"]] <- lapply(src_idx, function(i) {
-      data.frame(
+    src_list <- vector("list", length(src_idx))
+    for (k in seq_along(src_idx)) {
+      i <- src_idx[k]
+      src_list[[k]] <- data.frame(
         start = units$start[i],
         end = units$end[i],
         unit = i
       )
-    })
+    }
+    event_data[["Source Rock"]] <- src_list
   } else {
     event_data[["Source Rock"]] <- list()
   }
@@ -185,54 +189,51 @@ plot_event_chart <- function(
   # Reservoir Rock
 
   if (length(res_idx) > 0) {
-    event_data[["Reservoir Rock"]] <- lapply(res_idx, function(i) {
-      data.frame(
+    res_list <- vector("list", length(res_idx))
+    for (k in seq_along(res_idx)) {
+      i <- res_idx[k]
+      res_list[[k]] <- data.frame(
         start = units$start[i],
         end = units$end[i]
       )
-    })
+    }
+    event_data[["Reservoir Rock"]] <- res_list
   } else {
     event_data[["Reservoir Rock"]] <- list()
   }
 
-  # Seal Rock--
+  # Seal Rock
 
   if (length(seal_idx) > 0) {
-    event_data[["Seal Rock"]] <- lapply(seal_idx, function(i) {
-      data.frame(
+    seal_list <- vector("list", length(seal_idx))
+    for (k in seq_along(seal_idx)) {
+      i <- seal_idx[k]
+      seal_list[[k]] <- data.frame(
         start = units$start[i],
         end = units$end[i]
       )
-    })
+    }
+    event_data[["Seal Rock"]] <- seal_list
   } else {
     event_data[["Seal Rock"]] <- list()
   }
 
-  # Overburden-
-
-  #
-
+  # Overburden
   # Overburden begins after the first specified source rock has finished
+  # being deposited. Every subsequent deposition phase is represented as
+  # overburden, irrespective of the identity of the deposited unit.
+  # Hiatuses, uplift and erosion are not deposition phases and therefore
+  # remain as gaps in the overburden bar.
 
-  # being deposited.
-
-  #
-
-# Every subsequent deposition phase is represented as overburden,
-# irrespective of the identity of the deposited unit.
-# Hiatuses, uplift, and erosion are not deposition phases and therefore
-# remain as gaps in the overburden bar.
+  phase_type <- character(length(res$phases))
+  for (k in seq_along(res$phases)) {
+    phase_type[k] <- res$phases[[k]]$type
+  }
 
   if (length(src_idx) > 0) {
     overburden_onset <- max(units$end[src_idx])
 
-    deposition_phases <- res$phases[
-      vapply(
-        res$phases,
-        function(p) p$type == "deposition",
-        logical(1)
-      )
-    ]
+    deposition_phases <- res$phases[phase_type == "deposition"]
 
     over_intervals <- list()
 
@@ -257,15 +258,11 @@ plot_event_chart <- function(
 
     # Sort from old to young.
     if (length(over_intervals) > 1) {
-      over_intervals <- over_intervals[
-        order(
-          vapply(
-            over_intervals,
-            function(x) -x$start,
-            numeric(1)
-          )
-        )
-      ]
+      over_start <- numeric(length(over_intervals))
+      for (k in seq_along(over_intervals)) {
+        over_start[k] <- -over_intervals[[k]]$start
+      }
+      over_intervals <- over_intervals[order(over_start)]
     }
 
     # Merge directly adjacent deposition phases only.
@@ -295,21 +292,17 @@ plot_event_chart <- function(
 
   # Uplift/Erosion
 
-  erosions <- res$phases[
-    vapply(
-      res$phases,
-      function(p) p$type == "erosion",
-      logical(1)
-    )
-  ]
+  erosions <- res$phases[phase_type == "erosion"]
 
   if (length(erosions) > 0) {
-    event_data[["Uplift/Erosion"]] <- lapply(erosions, function(p) {
-      data.frame(
-        start = p$start,
-        end = p$end
+    ero_list <- vector("list", length(erosions))
+    for (k in seq_along(erosions)) {
+      ero_list[[k]] <- data.frame(
+        start = erosions[[k]]$start,
+        end = erosions[[k]]$end
       )
-    })
+    }
+    event_data[["Uplift/Erosion"]] <- ero_list
   } else {
     event_data[["Uplift/Erosion"]] <- list()
   }
@@ -319,15 +312,14 @@ plot_event_chart <- function(
   if (!is.null(trap_formation)) {
     tf <- as.data.frame(trap_formation)
 
-    event_data[["Trap Formation"]] <- lapply(
-      seq_len(nrow(tf)),
-      function(i) {
-        data.frame(
-          start = tf$start[i],
-          end = tf$end[i]
-        )
-      }
-    )
+    tf_list <- vector("list", nrow(tf))
+    for (i in seq_len(nrow(tf))) {
+      tf_list[[i]] <- data.frame(
+        start = tf$start[i],
+        end = tf$end[i]
+      )
+    }
+    event_data[["Trap Formation"]] <- tf_list
   } else {
     event_data[["Trap Formation"]] <- list()
   }
@@ -445,8 +437,14 @@ plot_event_chart <- function(
       return(list(x))
     }
 
-    if (is.list(x) && all(sapply(x, is.data.frame))) {
-      return(x)
+    if (is.list(x)) {
+      all_df <- TRUE
+      for (k in seq_along(x)) {
+        all_df <- all_df && is.data.frame(x[[k]])
+      }
+      if (all_df) {
+        return(x)
+      }
     }
 
     if (is.list(x) && length(x) == 0) {
@@ -458,19 +456,15 @@ plot_event_chart <- function(
     )
   }
 
-  event_data <- lapply(event_data, normalize)
+  for (k in seq_along(event_data)) {
+    event_data[k] <- list(normalize(event_data[[k]]))
+  }
 
   # Plot
 
-  old_mar <- par("mar")
-
-  par(
-    mar = c(5, 2, 4, 15)
-  )
-
-  on.exit(
-    par(mar = old_mar)
-  )
+  oldpar <- par(no.readonly = TRUE)
+  on.exit(par(oldpar))
+  par(mar = c(5, 2, 4, 15))
 
   plot(
     NA,
@@ -570,27 +564,21 @@ plot_event_chart <- function(
     # intervals from the same source rock are drawn in that same sub-row.
 
     if (cat_name == "Generation/Migration/Accumulation") {
-      if (
-        !all(
-          vapply(
-            intervals,
-            function(x) "unit" %in% names(x),
-            logical(1)
-          )
-        )
-      ) {
+      has_unit <- logical(length(intervals))
+      for (k in seq_along(intervals)) {
+        has_unit[k] <- "unit" %in% names(intervals[[k]])
+      }
+      if (!all(has_unit)) {
         stop(
           "Generation intervals must contain a 'unit' column."
         )
       }
 
-      generation_units <- unique(
-        vapply(
-          intervals,
-          function(x) x$unit[1],
-          numeric(1)
-        )
-      )
+      interval_unit <- numeric(length(intervals))
+      for (k in seq_along(intervals)) {
+        interval_unit[k] <- intervals[[k]]$unit[1]
+      }
+      generation_units <- unique(interval_unit)
 
       n_source_rows <- length(generation_units)
 
@@ -603,13 +591,11 @@ plot_event_chart <- function(
       for (s in seq_along(generation_units)) {
         unit_id <- generation_units[s]
 
-        unit_intervals <- intervals[
-          vapply(
-            intervals,
-            function(x) identical(x$unit[1], unit_id),
-            logical(1)
-          )
-        ]
+        same_unit <- logical(length(intervals))
+        for (k in seq_along(intervals)) {
+          same_unit[k] <- identical(intervals[[k]]$unit[1], unit_id)
+        }
+        unit_intervals <- intervals[same_unit]
 
         y0 <- y_bottom + (s - 1) * sub_height
         y1 <- y0 + sub_height

@@ -17,12 +17,18 @@ and hydrocarbon generation windows, and a petroleum system event chart.
 
 ## Installation
 
+Install the released version from CRAN with:
+
+``` r
+install.packages("BasinmodlR")
+```
+
 You can install the development version of BasinmodlR from
-[GitHub](https://github.com/stratigraphy/basinmodlR) with:
+[GitHub](https://github.com/stratigraphy/BasinmodlR) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("stratigraphy/basinmodlR")
+devtools::install_github("stratigraphy/BasinmodlR")
 ```
 
 ## Example
@@ -53,4 +59,5 @@ plot_event_chart(res,
 ## Reference
 
 Allen, P.A. and Allen, J.R. (2013). Basin Analysis: Principles and
-Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p.
+Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+Chichester, 632 p. ISBN 978-0-470-67377-5.

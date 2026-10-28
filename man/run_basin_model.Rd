@@ -211,7 +211,8 @@ max(my_res$profile$T_base)   # maximum temperature reached by any layer
 }
 \references{
 Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 
 Sclater, J.G., and Christie, P.A.F. (1980). Continental stretching: an
 explanation of the post-mid-Cretaceous subsidence of the central North Sea

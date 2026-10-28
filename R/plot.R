@@ -71,7 +71,8 @@
 #'
 #' @references
 #' Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-#' Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+#' Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+#' Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 #'
 #' Gradstein, F.M., Ogg, J.G., Schmitz, M.D., and Ogg, G.M. (eds) (2020). Geologic
 #' Time Scale 2020. Elsevier, Amsterdam, 1357 p.
@@ -142,25 +143,39 @@ plot_basin_model <- function(res,
   # Continuity check at the phase boundaries
   # Change in base depth (dz) and base temperature (dT) of every unit from one
   # age to the next.
-  d_cc <- do.call(rbind, lapply(split(res$profile, res$profile$unit), function(x) {
+  by_unit <- split(res$profile, res$profile$unit)
+  d_cc <- vector("list", length(by_unit))
+  for (k in seq_along(by_unit)) {
+    x <- by_unit[[k]]
     x <- x[order(-x$age), ]
-    if (nrow(x) < 2) return(NULL)
-    data.frame(age = x$age[-1], unit = x$unit[-1],
-               dz = abs(diff(x$z_base)), dT = abs(diff(x$T_base)))
-  }))
+    if (nrow(x) >= 2) {
+      d_cc[[k]] <- data.frame(age = x$age[-1], unit = x$unit[-1],
+                              dz = abs(diff(x$z_base)),
+                              dT = abs(diff(x$T_base)))
+    }
+  }
+  d_cc <- do.call(rbind, d_cc)
 
   # Ages of the boundaries between two phases.
-  bnd <- vapply(res$phases[-length(res$phases)], function(p) p$end, 0)
+  bnd <- numeric(length(res$phases) - 1)
+  for (k in seq_along(bnd)) {
+    bnd[k] <- res$phases[[k]]$end
+  }
 
-  out_cc <- do.call(rbind, lapply(bnd, function(b) {
+  out_cc <- vector("list", length(bnd))
+  for (k in seq_along(bnd)) {
+    b <- bnd[k]
     at <- d_cc[d_cc$age == b - 1, ]
     nb <- d_cc[abs(d_cc$age - (b - 1)) <= span & d_cc$age != b - 1, ]
-    data.frame(boundary_Ma = b,
-               jump_z = if (nrow(at)) max(at$dz) else NA_real_,
-               bg_z = if (nrow(nb)) stats::median(nb$dz) else NA_real_,
-               jump_T = if (nrow(at)) max(at$dT) else NA_real_,
-               bg_T = if (nrow(nb)) stats::median(nb$dT) else NA_real_)
-  }))
+    out_cc[[k]] <- data.frame(
+      boundary_Ma = b,
+      jump_z = if (nrow(at)) { max(at$dz) } else { NA_real_ },
+      bg_z = if (nrow(nb)) { stats::median(nb$dz) } else { NA_real_ },
+      jump_T = if (nrow(at)) { max(at$dT) } else { NA_real_ },
+      bg_T = if (nrow(nb)) { stats::median(nb$dT) } else { NA_real_ }
+    )
+  }
+  out_cc <- do.call(rbind, out_cc)
 
   if (verbose && !is.null(out_cc) && nrow(out_cc) > 0) {
     out_cc$ratio_z <- round(out_cc$jump_z / pmax(out_cc$bg_z, 1e-9), 2)
@@ -171,7 +186,9 @@ plot_basin_model <- function(res,
 
   # Prepare the data for plotting
   # The x axis is flipped so that the oldest age is on the left: x = xmax - age.
-  if (is.null(xmax)) xmax <- max(res$ages) + 1
+  if (is.null(xmax)) {
+    xmax <- max(res$ages) + 1
+  }
 
   xf <- function(a) xmax - a
   o <- order(-res$ages)
@@ -182,7 +199,9 @@ plot_basin_model <- function(res,
   dg <- res$depth_grid
   xtick <- seq(0, floor(xmax / tick) * tick, by = tick)
 
-  if (is.null(window_units)) window_units <- res$source_units
+  if (is.null(window_units)) {
+    window_units <- res$source_units
+  }
   if (is.character(window_units)) {
     window_units <- match(window_units, res$units$name)
   }
@@ -207,7 +226,9 @@ plot_basin_model <- function(res,
 
   cols <- turbo_pal(length(br) - 1)
 
-  if (new_device) grDevices::dev.new(width = 10, height = 9)
+  if (new_device) {
+    grDevices::dev.new(width = 10, height = 9)
+  }
 
   op <- graphics::par(no.readonly = TRUE)
   on.exit(graphics::par(op), add = TRUE)
@@ -248,7 +269,9 @@ plot_basin_model <- function(res,
     b <- min(ics_periods$base[i], xmax)
     tp <- ics_periods$top[i]
 
-    if (tp >= xmax) next
+    if (tp >= xmax) {
+      next
+    }
 
     graphics::rect(
       xf(b), 0,

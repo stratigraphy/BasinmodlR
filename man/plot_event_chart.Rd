@@ -131,7 +131,8 @@ Association of Petroleum Geologists Memoir 60, 3--24.
 \doi{10.1306/M60585C1} \cr
 
 Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p.
+Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+Chichester, 632 p. ISBN 978-0-470-67377-5.
 }
 \seealso{
 \code{\link{run_basin_model}}, \code{\link{plot_basin_model}}

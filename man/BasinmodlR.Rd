@@ -3,8 +3,7 @@
 \name{BasinmodlR}
 \alias{BasinmodlR}
 \alias{BasinmodlR-package}
-\title{One-Dimensional Burial and Thermal History Modelling of Sedimentary
-Basins}
+\title{Burial and Thermal History Modelling of Sedimentary Basins}
 \description{
 BasinmodlR is an R package for one-dimensional (1D) burial,
 compaction and thermal history modelling of sedimentary basins. It is aimed
@@ -38,8 +37,7 @@ If you want to use this package for publication or research
 purposes, please cite:
 
 Arts, M.C.M. (2026).
-BasinmodlR: One-Dimensional Burial and Thermal History Modelling of
-Sedimentary Basins.
+BasinmodlR: Burial and Thermal History Modelling of Sedimentary Basins.
 https://CRAN.R-project.org/package=BasinmodlR
 }
 \section{Describing a basin}{
@@ -137,7 +135,8 @@ backstripping, (2) heat flow and thermal modelling and petroleum systems and
 #1. Basin analysis, compaction and backstripping \cr
 
 Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 
 Sclater, J.G., and Christie, P.A.F. (1980). Continental stretching: an
 explanation of the post-mid-Cretaceous subsidence of the central North Sea

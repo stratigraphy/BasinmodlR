@@ -27,14 +27,19 @@ NULL
 print.basin_model <- function(x, ...) {
 
   cat("One-dimensional basin model")
-  if (!is.na(x$site_name)) cat(": ", x$site_name, sep = "")
+  if (!is.na(x$site_name)) {
+    cat(": ", x$site_name, sep = "")
+  }
   cat("\n")
 
   cat("  time span            : ", max(x$ages) + 1, " to ", min(x$ages),
       " Ma (", length(x$ages), " time steps of 1 Myr)\n", sep = "")
   cat("  stratigraphic units  : ", nrow(x$units), "\n", sep = "")
 
-  types <- vapply(x$phases, function(p) p$type, "")
+  types <- character(length(x$phases))
+  for (k in seq_along(x$phases)) {
+    types[k] <- x$phases[[k]]$type
+  }
   cat("  phases               : ", sum(types == "deposition"), " deposition, ",
       sum(types == "erosion"), " erosion, ", sum(types == "hiatus"),
       " hiatus\n", sep = "")

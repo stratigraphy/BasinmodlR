@@ -76,7 +76,8 @@
 #'
 #' @references
 #' Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-#' Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+#' Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+#' Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 #'
 #' Arts, M.C.M., Djouder, H., Devleeschouwer, X., and Da Silva, A.-C.
 #' (2026). Solid bitumen in the Silurian Bonne Espérance Formation at Huy,

@@ -149,7 +149,8 @@
 #'
 #' @references
 #' Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-#' Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+#' Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+#' Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 #'
 #' Sclater, J.G., and Christie, P.A.F. (1980). Continental stretching: an
 #' explanation of the post-mid-Cretaceous subsidence of the central North Sea
@@ -276,7 +277,11 @@ run_basin_model <- function(site = NULL,
     }
   }
   # Sort all phases from old to young.
-  ph <- ph[order(-vapply(ph, function(p) p$start, 0))]
+  ph_start <- numeric(length(ph))
+  for (k in seq_along(ph)) {
+    ph_start[k] <- ph[[k]]$start
+  }
+  ph <- ph[order(-ph_start)]
 
   # Walk through the sorted phases and fill every gap with a hiatus.
   phases <- list()
@@ -511,7 +516,7 @@ run_basin_model <- function(site = NULL,
       Tp <- tsurf[k]
 
       for (i in seq_len(ns)) {
-        qi <- if (radiogenic == "cumulative") qs else qbase[k] + Ai[i] * z
+        qi <- if (radiogenic == "cumulative") { qs } else { qbase[k] + Ai[i] * z }
         qt[i] <- qi
         Tt[i] <- Tp
         Tb[i] <- Tp + qi * hh[i] / Kb[i] - Ai[i] * hh[i]^2 / (2 * Kb[i])
@@ -546,7 +551,11 @@ run_basin_model <- function(site = NULL,
     }
   }
 
-  profile <- do.call(rbind, layers[!vapply(layers, is.null, TRUE)])
+  keep <- logical(length(layers))
+  for (k in seq_along(layers)) {
+    keep[k] <- !is.null(layers[[k]])
+  }
+  profile <- do.call(rbind, layers[keep])
 
   # 6. Temperature raster on a common age-depth grid
   # The raster is used by plot_basin_model(). Depths are measured below sea
@@ -589,7 +598,7 @@ run_basin_model <- function(site = NULL,
     depth_grid = depth_grid,
     temp_grid = temp_grid,
     radiogenic = radiogenic,
-    site_name = if (is.null(site$name)) NA_character_ else site$name,
+    site_name = if (is.null(site$name)) { NA_character_ } else { site$name },
     source_units = site$source_units
   )
 
@@ -597,7 +606,7 @@ run_basin_model <- function(site = NULL,
 
   if (verbose) {
     cat("1-D basin model",
-        if (!is.na(res$site_name)) paste0(": ", res$site_name) else "",
+        if (!is.na(res$site_name)) { paste0(": ", res$site_name) } else { "" },
         "\n", sep = "")
   }
 

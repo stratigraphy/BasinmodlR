@@ -114,7 +114,8 @@ plot_basin_model(res,
 }
 \references{
 Allen, P.A., and Allen, J.R. (2013). Basin Analysis: Principles and
-Applications, 3rd ed. Blackwell Publishing, Oxford, 619 p. \cr
+Application to Petroleum Play Assessment, 3rd ed. Wiley-Blackwell,
+Chichester, 632 p. ISBN 978-0-470-67377-5. \cr
 
 Gradstein, F.M., Ogg, J.G., Schmitz, M.D., and Ogg, G.M. (eds) (2020). Geologic
 Time Scale 2020. Elsevier, Amsterdam, 1357 p.
